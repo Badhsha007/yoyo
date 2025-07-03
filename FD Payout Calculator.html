@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FD Calculator</title>
+    <!-- Link to your Web App Manifest -->
+    <link rel="manifest" href="/fd-calculator-manifest.json">
+    <!-- Theme color for the browser UI -->
+    <meta name="theme-color" content="#3B82F6"/>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom font for a clean look */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Hide the default number input arrows for a cleaner look */
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-gray-200">
+        <h1 class="text-3xl font-extrabold text-center text-gray-800 mb-6">
+            FD Payout Calculator
+        </h1>
+
+        <!-- Input for Principal Amount -->
+        <div class="mb-5">
+            <label for="principal" class="block text-gray-700 text-sm font-semibold mb-2">
+                Principal Amount (₹)
+            </label>
+            <input
+                type="number"
+                id="principal"
+                placeholder="e.g., 10000000"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out text-gray-800"
+                min="0"
+                step="any"
+            >
+        </div>
+
+        <!-- Input for Annual Interest Rate -->
+        <div class="mb-5">
+            <label for="rate" class="block text-gray-700 text-sm font-semibold mb-2">
+                Annual Interest Rate (%)
+            </label>
+            <input
+                type="number"
+                id="rate"
+                placeholder="e.g., 6.6"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out text-gray-800"
+                min="0"
+                step="0.01"
+            >
+        </div>
+
+        <!-- Input for Tenure -->
+        <div class="mb-6">
+            <label class="block text-gray-700 text-sm font-semibold mb-2">
+                Tenure
+            </label>
+            <div class="flex gap-2">
+                <div class="flex-1">
+                    <input
+                        type="number"
+                        id="tenureYears"
+                        placeholder="Years"
+                        class="w-full px-2 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out text-gray-800"
+                        min="0"
+                        step="1"
+                    >
+                </div>
+                <div class="flex-1">
+                    <input
+                        type="number"
+                        id="tenureMonths"
+                        placeholder="Months"
+                        class="w-full px-2 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out text-gray-800"
+                        min="0"
+                        max="11"
+                        step="1"
+                    >
+                </div>
+                <div class="flex-1">
+                    <input
+                        type="number"
+                        id="tenureDays"
+                        placeholder="Days"
+                        class="w-full px-2 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out text-gray-800"
+                        min="0"
+                        max="30"
+                        step="1"
+                    >
+                </div>
+            </div>
+        </div>
+
+        <!-- FD Type Options -->
+        <div class="mb-6">
+            <label class="block text-gray-700 text-sm font-semibold mb-2">
+                Type of FD
+            </label>
+            <div class="flex flex-wrap gap-4">
+                <label class="inline-flex items-center">
+                    <input type="radio" name="fdType" value="payout" class="form-radio text-blue-600 h-4 w-4" checked>
+                    <span class="ml-2 text-gray-700">Interest Payout</span>
+                </label>
+                <label class="inline-flex items-center">
+                    <input type="radio" name="fdType" value="cumulative" class="form-radio text-blue-600 h-4 w-4">
+                    <span class="ml-2 text-gray-700">Cumulative (On Maturity)</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Payout Frequency Options (Conditional Display) -->
+        <div id="payoutFrequencySection" class="mb-6">
+            <label class="block text-gray-700 text-sm font-semibold mb-2">
+                Payout Frequency
+            </label>
+            <div class="flex flex-wrap gap-4">
+                <label class="inline-flex items-center">
+                    <input type="radio" name="payoutFrequency" value="monthly" class="form-radio text-blue-600 h-4 w-4" checked>
+                    <span class="ml-2 text-gray-700">Monthly</span>
+                </label>
+                <label class="inline-flex items-center">
+                    <input type="radio" name="payoutFrequency" value="quarterly" class="form-radio text-blue-600 h-4 w-4">
+                    <span class="ml-2 text-gray-700">Quarterly</span>
+                </label>
+                <label class="inline-flex items-center">
+                    <input type="radio" name="payoutFrequency" value="yearly" class="form-radio text-blue-600 h-4 w-4">
+                    <span class="ml-2 text-gray-700">Yearly</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Calculate Button -->
+        <button
+            id="calculateBtn"
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition duration-300 ease-in-out transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+        >
+            Calculate Payout
+        </button>
+
+        <!-- Result Display Area -->
+        <div id="resultContainer" class="mt-8 p-6 bg-blue-50 rounded-xl border border-blue-200 text-center hidden">
+            <p class="text-lg text-gray-700 mb-2" id="resultLabel"></p>
+            <p id="payoutAmount" class="text-4xl font-extrabold text-blue-700 mb-4">₹0.00</p>
+            <p class="text-md text-gray-700 mb-2 hidden" id="totalInterestDisplay">Total Interest Earned: <span id="totalInterestValue" class="font-semibold">₹0.00</span></p>
+            <p class="text-md text-gray-700 mb-2 hidden" id="maturityDateDisplay">Maturity Date: <span id="maturityDateValue" class="font-semibold"></span></p>
+            <p class="text-xs text-gray-600 mt-4" id="compoundingNote">
+                *For Cumulative FD, interest is compounded quarterly. For Interest Payout FDs, payouts are based on simple annual interest. Note: Monthly payouts by banks may be slightly lower due to a "discounted value" for more frequent payouts.
+            </p>
+        </div>
+
+        <!-- Error Message Area -->
+        <div id="errorContainer" class="mt-4 p-4 bg-red-100 border border-red-300 text-red-700 rounded-lg hidden">
+            <p id="errorMessage"></p>
+        </div>
+    </div>
+
+    <script>
+        // Get references to the input fields and elements for displaying results/errors
+        const principalInput = document.getElementById('principal');
+        const rateInput = document.getElementById('rate');
+        const tenureYearsInput = document.getElementById('tenureYears');
+        const tenureMonthsInput = document.getElementById('tenureMonths');
+        const tenureDaysInput = document.getElementById('tenureDays');
+        const fdTypeRadios = document.querySelectorAll('input[name="fdType"]');
+        const payoutFrequencySection = document.getElementById('payoutFrequencySection');
+        const payoutFrequencyRadios = document.querySelectorAll('input[name="payoutFrequency"]');
+        const calculateBtn = document.getElementById('calculateBtn');
+        const resultContainer = document.getElementById('resultContainer');
+        const resultLabel = document.getElementById('resultLabel');
+        const payoutAmountDisplay = document.getElementById('payoutAmount');
+        const totalInterestDisplay = document.getElementById('totalInterestDisplay');
+        const totalInterestValue = document.getElementById('totalInterestValue');
+        const maturityDateDisplay = document.getElementById('maturityDateDisplay');
+        const maturityDateValue = document.getElementById('maturityDateValue');
+        const errorContainer = document.getElementById('errorContainer');
+        const errorMessageDisplay = document.getElementById('errorMessage');
+        const compoundingNote = document.getElementById('compoundingNote');
+
+        // Function to calculate the FD payout based on selected frequency and compounding rules
+        function calculateFdPayout() {
+            // Hide previous results and errors
+            resultContainer.classList.add('hidden');
+            errorContainer.classList.add('hidden');
+            errorMessageDisplay.textContent = '';
+            totalInterestDisplay.classList.add('hidden');
+            maturityDateDisplay.classList.add('hidden');
+
+            // Get values from input fields and convert them to numbers
+            const principal = parseFloat(principalInput.value);
+            const rate = parseFloat(rateInput.value);
+            const tenureYears = parseFloat(tenureYearsInput.value) || 0;
+            const tenureMonths = parseFloat(tenureMonthsInput.value) || 0;
+            const tenureDays = parseFloat(tenureDaysInput.value) || 0;
+
+            // Calculate total tenure in days for precise calculation
+            const totalTenureInDays = (tenureYears * 365) + (tenureMonths * 30) + tenureDays;
+
+            // Calculate total tenure in years for compounding formula (using 365.25 for average year length)
+            const totalTenureInYearsForCompounding = totalTenureInDays / 365.25;
+
+            // Input validation
+            if (isNaN(principal) || isNaN(rate) || isNaN(totalTenureInDays) || principal <= 0 || rate < 0 || totalTenureInDays <= 0) {
+                errorMessageDisplay.textContent = 'Please enter valid positive numbers for Principal, Rate, and Tenure (Years/Months/Days).';
+                errorContainer.classList.remove('hidden');
+                return;
+            }
+
+            // Convert annual rate percentage to decimal for calculation
+            const annualRateDecimal = rate / 100;
+
+            let selectedFdType = 'payout';
+            for (const radio of fdTypeRadios) {
+                if (radio.checked) {
+                    selectedFdType = radio.value;
+                    break;
+                }
+            }
+
+            let payout = 0;
+            let totalInterest = 0;
+            let maturityAmount = 0;
+            let displayLabel = '';
+            let selectedPayoutFrequency = '';
+
+            if (selectedFdType === 'cumulative') {
+                // For Cumulative FD: Interest is compounded quarterly to determine the final maturity amount.
+                const compoundingFrequency = 4; // Interest is compounded quarterly
+                maturityAmount = principal * Math.pow((1 + annualRateDecimal / compoundingFrequency), (compoundingFrequency * totalTenureInYearsForCompounding));
+                totalInterest = maturityAmount - principal;
+
+                displayLabel = 'Estimated Maturity Amount:';
+                payout = maturityAmount;
+                totalInterestDisplay.classList.remove('hidden');
+                totalInterestValue.textContent = `₹${totalInterest.toFixed(2)}`;
+
+            } else {
+                // For Interest Payout FD (Monthly, Quarterly, Yearly): Payouts are based on simple interest.
+                for (const radio of payoutFrequencyRadios) {
+                    if (radio.checked) {
+                        selectedPayoutFrequency = radio.value;
+                        break;
+                    }
+                }
+
+                // Calculate annual simple interest
+                const annualSimpleInterest = principal * annualRateDecimal;
+
+                switch (selectedPayoutFrequency) {
+                    case 'monthly':
+                        // Monthly payout is simple annual interest divided by 12.
+                        // Banks might apply a slight "discounted value" for monthly payouts,
+                        // which is a bank-specific nuance not directly calculable from standard formulas.
+                        payout = annualSimpleInterest / 12;
+                        displayLabel = 'Estimated Monthly Payout:';
+                        break;
+                    case 'quarterly':
+                        // Quarterly payout is simple annual interest divided by 4.
+                        payout = annualSimpleInterest / 4;
+                        displayLabel = 'Estimated Quarterly Payout:';
+                        break;
+                    case 'yearly':
+                        // Yearly payout is simple annual interest.
+                        payout = annualSimpleInterest;
+                        displayLabel = 'Estimated Yearly Payout:';
+                        break;
+                }
+            }
+
+            // Calculate Maturity Date
+            const today = new Date();
+            const maturityDate = new Date(today.getFullYear() + tenureYears, today.getMonth() + tenureMonths, today.getDate() + tenureDays);
+            maturityDateDisplay.classList.remove('hidden');
+            maturityDateValue.textContent = maturityDate.toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
+
+            // Display the result
+            resultLabel.textContent = displayLabel;
+            payoutAmountDisplay.textContent = `₹${payout.toFixed(2)}`;
+            resultContainer.classList.remove('hidden');
+        }
+
+        // Event listener for FD Type radio buttons to toggle Payout Frequency section
+        fdTypeRadios.forEach(radio => {
+            radio.addEventListener('change', () => {
+                if (radio.value === 'payout') {
+                    payoutFrequencySection.classList.remove('hidden');
+                    // Ensure a payout frequency is selected if switching back to payout type
+                    if (!document.querySelector('input[name="payoutFrequency"]:checked')) {
+                        document.querySelector('input[name="payoutFrequency"][value="monthly"]').checked = true;
+                    }
+                } else {
+                    payoutFrequencySection.classList.add('hidden');
+                }
+                calculateFdPayout(); // Recalculate on FD type change
+            });
+        });
+
+        // Add event listener to the calculate button
+        calculateBtn.addEventListener('click', calculateFdPayout);
+
+        // Optional: Allow calculation on 'Enter' key press in any input field
+        principalInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') calculateFdPayout();
+        });
+        rateInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') calculateFdPayout();
+        });
+        tenureYearsInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') calculateFdPayout();
+        });
+        tenureMonthsInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') calculateFdPayout();
+        });
+        tenureDaysInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') calculateFdPayout();
+        });
+
+        // Add event listeners to payout frequency radio buttons to recalculate if frequency changes
+        payoutFrequencyRadios.forEach(radio => {
+            radio.addEventListener('change', calculateFdPayout);
+        });
+
+        // Initial calculation on load to show default values
+        calculateFdPayout();
+
+        // Register Service Worker for PWA functionality
+        if ('serviceWorker' in navigator) {
+            console.log('Service Worker API available.');
+            console.log('Current origin:', window.location.origin);
+            console.log('Current href:', window.location.href);
+
+            window.addEventListener('load', () => {
+                // Changed to relative path './' which is generally more robust in various hosting scenarios
+                navigator.serviceWorker.register('./fd-calculator-sw.js') 
+                    .then(registration => {
+                        console.log('Service Worker registered with scope:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.error('Service Worker registration failed:', error);
+                        console.error('Service Worker error message:', error.message);
+                    });
+            });
+        } else {
+            console.log('Service Worker API not available in this browser/environment.');
+        }
+    </script>
+</body>
+</html>
